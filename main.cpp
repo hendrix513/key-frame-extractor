@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
     double time = 0;
     double total_diff = 0;
 
-    int size, mid_idx, mid_val, ii, jj;
+    int size, mid_idx, mid_val, ii, jj, r;
 
     MatIterator_<uchar> it;
 
@@ -92,19 +92,20 @@ int main(int argc, char *argv[]) {
                then frame is a keyframe
              */
             if (countNonZero(gray_frame_diff) > key_frame_num_pixels){
-                it = gray_frame.begin<uchar>();
-
                 vector<vector <vector<int>>> groups(num_horizontal_zones,
                  vector <vector<int>>(num_vertical_zones, vector<int>()));
 
                 /* iterate through pixels of gray frame, appending each value
                    to the vector of its corresponding 'zone'
                  */
+
+                #pragma omp parallel for
                 for (ii=0; ii<gray_frame.rows; ii++){
-                    for (jj=0; jj<gray_frame.cols; jj++, it++){
-                        groups[(ii*num_horizontal_zones)/gray_frame.rows]
-                               [(jj*num_vertical_zones)/gray_frame.cols].push_back((int)*it);
-                    }
+                    it = gray_frame.row(ii).begin<uchar>();
+                    r = (ii*num_horizontal_zones)/gray_frame.rows;
+
+                    for (jj=0; jj<gray_frame.cols; jj++, it++)
+                        groups[r][(jj*num_vertical_zones)/gray_frame.cols].push_back((int)*it);
                 }
 
                 /* iterate through each vector of pixels, find median value for
