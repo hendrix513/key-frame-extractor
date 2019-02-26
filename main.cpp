@@ -113,7 +113,9 @@ int main(int argc, char *argv[]) {
                  */
                 vector<double> medians {tm};
                 for (auto group_row: groups){
+                    #pragma omp for ordered schedule(dynamic)
                     for (auto v: group_row)
+                        #pragma omp ordered
                         medians.push_back(get_median_val(v));
                 }
 
