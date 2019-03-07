@@ -10,13 +10,39 @@ using namespace std;
 #define RESIZE_FACTOR          .25
 #define GAUSSIAN_BLUR_PARAM    9
 
+int select_val(vector <int> v, int idx){
+    vector <int> lows, highs;
+    int pivot = v[idx];
+    int num_pivots = 0, num_lows, total_lows_pivots;
+
+    if (v.size() == 1)
+        return v[0];
+
+    for (auto num: v){
+       if (num == pivot)
+           num_pivots++;
+       else
+           (num < pivot ? lows : highs).push_back(num);
+    }
+
+    num_lows = lows.size();
+    total_lows_pivots = num_lows + num_pivots;
+
+    if (idx < num_lows)
+        return select_val(lows, idx);
+    else if (idx < total_lows_pivots)
+        return pivot;
+    else
+        return select_val(highs, idx-total_lows_pivots);
+}
+
 double get_median_val(vector <int> v){
     sort(v.begin(), v.end());
     int size = v.size();
     int mid_idx = size/2;
-    int mid_val = v[mid_idx];
+    int mid_val = select_val(v, mid_idx);
 
-    return size % 2 ? mid_val : (mid_val+ v[mid_idx - 1])/2.0;
+    return size % 2 ? mid_val : (mid_val+ select_val(v, mid_idx-1))/2.0;
 }
 
 int main(int argc, char *argv[]) {
